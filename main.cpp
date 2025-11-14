@@ -8,49 +8,64 @@
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
-#define WIDTH 50
-#define HEIGHT 20
+#define WIDTH 30
+#define HEIGHT 30
 #define DEAPTH 50
+#define spaceSize 500
 
 void initializeSpace(std::vector<std::vector<std::vector<char>>>& space, std::vector<std::vector<char>>& screen){
-        space.resize(DEAPTH, std::vector<std::vector<char>>(HEIGHT, std::vector<char>(WIDTH, '.')));
+        space.resize(spaceSize, std::vector<std::vector<char>>(spaceSize, std::vector<char>(spaceSize, '.')));
         screen.resize(HEIGHT, std::vector<char>(WIDTH, '.'));
 }
 
-void moveBody(std::vector<float>& position, std::vector<std::vector<float>>& trailList, std::vector<std::vector<std::vector<char>>>& space){
-    float x = position[0];
-    float y = position[1];
-    float z = position[2];
-    
-    z += 1;
+void moveBody(std::vector<std::vector<float>>& trailList, std::vector<std::vector<std::vector<char>>>& space){
+    std::vector<float> currentPostion = trailList[trailList.size() - 1];
+    float x = currentPostion[0];
+    float y = currentPostion[1];
+    float z = currentPostion[2];
+
+    z += M_PI / 24;
 
     float cx = WIDTH / 2.0f;
     float cy = HEIGHT / 2.0f;
 
-    float angleDiff = M_PI / 6;
-    float r = std::sqrt(x*x + y*y);
-    float theta = atan2(x, y);
+    float offsetX = x - cx; 
+    float offsetY = y - cy;
+
+    float theta = atan2(offsetY, offsetX);
+    float angleDiff = M_PI / 24;
     float nextTheta = theta + angleDiff;
 
+    float r = std::sqrt(offsetX * offsetX + offsetY * offsetY);
     x = cx + r * std::cos(nextTheta);
-    y = cy + r * std::cos(nextTheta);
+    y = cy + r * std::sin(nextTheta);
 
 
     trailList.push_back({x,y,z});
-
-    for (int i = 0; i < trailList.size(); i++) {
-        std::vector<float> trailPoint = trailList[i];
-        space[trailPoint[0]][trailPoint[1]][trailPoint[2]] = '*';
-    }
+    std::cout << x << " " << y << " " << theta << " " << r <<"\n";
+    if (x >= 0 && x < spaceSize &&
+    y >= 0 && y < spaceSize &&
+    z >= 0 && z < spaceSize)
+{
+    space[(int)z][(int)y][(int)x] = '*';
+}
     
 }
 
 void generateScreen(std::vector<std::vector<std::vector<char>>>& space, std::vector<std::vector<char>>& screen){
+    //clear screen
+    screen.assign(HEIGHT, std::vector<char>(WIDTH, '.'));
+    //transform a 3D space into a 2D screen
     for (int z = 0; z < DEAPTH; z++) {
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 if(space[z][y][x] != '.'){
-                    screen[y][x] = space[z][y][x];
+                    //isometric view
+                    int sx = static_cast<int>((x - z) + WIDTH / 2);
+                    int sy = static_cast<int>((x + z)/2 - y + HEIGHT / 2);
+
+                    if(sx >= 0 && sx < WIDTH && sy >= 0 && sy < HEIGHT)
+                        screen[sy][sx] = space[z][y][x];
                 }
             }
         }   
@@ -60,7 +75,7 @@ void generateScreen(std::vector<std::vector<std::vector<char>>>& space, std::vec
 void dipslayScreen(std::vector<std::vector<char>>& screen){
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            std::cout << screen[y][x];
+            std::cout << " " << screen[y][x];
         }
         std::cout << "\n";
     }  
@@ -71,18 +86,16 @@ int main(){
     std::vector<std::vector<std::vector<char>>> space;
     std::vector<std::vector<char>> screen;
 
-    std::vector<float> position = {WIDTH / 2 + 5,HEIGHT/2,0};
-    std::vector<std::vector<float>> trailList;
+    std::vector<std::vector<float>> trailList = {{WIDTH / 2 + 5,HEIGHT/2, 0}};
     initializeSpace(space, screen);
 
     while(true){
         std::cout << "\033[H\033[J";
-        std::cout << "oui" << std::endl;
-        moveBody(position, trailList, space);
+        moveBody(trailList, space);
         generateScreen(space, screen);
         dipslayScreen(screen);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     return 0;
 }
