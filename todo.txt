@@ -1,0 +1,4 @@
+- reset z variable because it can't go infinitly
+- add more bodies
+- set colors
+- find a way to move camera and smooth it, beacause it shakes
