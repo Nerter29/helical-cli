@@ -10,8 +10,8 @@
 #define M_PI 3.14159265358979323846
 
 
-Body::Body(float x, float y, float angleSpeed, char skin, char trailSkin):
-    x(x), y(y), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin){}
+Body::Body(float x, float y, float angleSpeed, char skin, char trailSkin, int maxTrailLength):
+    x(x), y(y), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin), maxTrailLength(maxTrailLength){}
 
 void Body::move(float centerX, float centerY,float commonZ){
     float offsetX = x - centerX; 
@@ -26,6 +26,9 @@ void Body::move(float centerX, float centerY,float commonZ){
 
 
     trailList.push_back({x,y,commonZ});
-    std::cout << x << " " << y << " " << theta << " " << r << " "<< angleSpeed << "\n";
+    if(trailList.size() >= maxTrailLength * 2){
+        trailList.erase(trailList.begin(), trailList.begin() + maxTrailLength);
+    }
+    //std::cout << x << " " << y << " " << theta << " " << r << " "<< angleSpeed << "\n";
 
 }

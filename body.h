@@ -13,8 +13,9 @@ public:
     std::vector<std::vector<float>> trailList; // trailList = {{x, y, z}, {x, y, z}}
     char skin;
     char trailSkin;
+    int maxTrailLength;
 
-    Body(float x, float y, float angleSpeed, char skin, char trailSkin);
+    Body(float x, float y, float angleSpeed, char skin, char trailSkin, int maxTrailLength);
 
     void move(float centerX, float centerY,float commonZ);
     
