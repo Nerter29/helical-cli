@@ -10,8 +10,8 @@
 #define M_PI 3.14159265358979323846
 
 
-Body::Body(float x, float y, float angleSpeed, char skin, char trailSkin, int maxTrailLength):
-    x(x), y(y), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin), maxTrailLength(maxTrailLength){}
+Body::Body(float x, float y, float angleSpeed, std::string skin, std::string trailSkin, int maxTrailLength, std::tuple<float, float, float> color):
+    x(x), y(y), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin), maxTrailLength(maxTrailLength), color(color){}
 
 void Body::move(float centerX, float centerY,float commonZ){
     float offsetX = x - centerX; 

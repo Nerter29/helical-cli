@@ -1,3 +1,0 @@
-- reset z variable because it can't go infinitly
-- add more bodies
-- set colors
