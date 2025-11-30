@@ -82,7 +82,6 @@ int main(){
 
     while(true){
         std::cout << "\033[H\033[J";
-        std::cout << commonZ << " ";
         getWindowSize(screenWidth, screenHeight);
 
         commonZ += zSpeed;
