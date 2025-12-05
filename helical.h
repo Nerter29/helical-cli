@@ -15,7 +15,7 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
 
 std::string getColoredString(std::tuple<float, float, float> color, std::string skin);
 
-void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodiesAttributes, int maxTrailLength);
+void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodiesAttributes, int maxTrailLength, float centerX, float centerY,float commonZ);
 
 
 

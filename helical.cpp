@@ -6,7 +6,7 @@
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
-#define DEPTH 200
+#define DEPTH 100
 
 void calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
 float cameraAngle, float cameraX, float cameraY, int x, int y, int z, float cameraZoom){
@@ -37,15 +37,32 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
 
     for(int i = 0; i < bodies.size(); i++){
         Body& body = bodies[i];
-        for(int j = body.trailList.size() - 1; j >= 0 ; j--){
-            std::vector<float>& trailUnit = body.trailList[j];
-            int x = trailUnit[0];
-            int y = trailUnit[1];
-            int z = trailUnit[2];
+
+        if(i == 0){
+            body.generateSkin(centerX, centerY, commonZ);
+        }
+
+
+        for(int j = body.trailList.size() - 1 + body.headList.size() - 1; j >= 0 ; j--){
+            bool isHead = false;
+
+            std::vector<float>* trailUnit;
+            if(j >= body.trailList.size() - 1){
+                isHead = true;
+                trailUnit = &body.headList[j - (body.trailList.size() - 1)];
+            }
+            else{
+                
+                trailUnit = &body.trailList[j];
+            }
+
+            int x = (*trailUnit)[0];
+            int y = (*trailUnit)[1];
+            int z = (*trailUnit)[2];
 
             //rollback everything when we go to deep in space, so commonZ doesn't grow iniftly
-            if(hasToRollback){
-                trailUnit[2] -= DEPTH;
+            if(hasToRollback && !isHead){
+                (*trailUnit)[2] -= DEPTH;
                 z -= DEPTH;
             }
 
@@ -54,7 +71,7 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
             calculateIsomtricPosition(isometricX, isometricY, centerX, centerY, commonZ, cameraAngle, cameraX, cameraY, x, y, z, cameraZoom);
 
             if(isometricX >= 0 && isometricX < screenWidth && isometricY >= 0 && isometricY < screenHeight){
-                if(j == body.trailList.size() - 1){ //display body
+                if(j == body.trailList.size() - 1 || isHead){ //display Body
                     screen[isometricY][isometricX] = getColoredString(body.color, body.skin);
                 }
                 else{ //display body's trail
@@ -74,7 +91,7 @@ std::string getColoredString(std::tuple<float, float, float> color, std::string 
     return "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m" + skin + "\033[0m";
 }
 
-void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodiesAttributes, int maxTrailLength){
+void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodiesAttributes, int maxTrailLength, float centerX, float centerY,float commonZ){
 
     for(int i = 0; i < bodiesAttributes.size(); i++){
         float x = bodiesAttributes[i][0];
@@ -84,7 +101,7 @@ void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodi
         float g = bodiesAttributes[i][4];
         float b = bodiesAttributes[i][5];
         std::tuple<float, float, float> color = {r, g, b};
-        Body body = Body(x, y, angleSpeed, "@", "*", maxTrailLength, color);
+        Body body = Body(x, y, angleSpeed, "@", "*", maxTrailLength, color, 10);
         bodies.push_back(body);
     }
 }
