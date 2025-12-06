@@ -7,6 +7,17 @@
 
 #include "body.h"
 
+typedef struct {
+    float x;         
+    float y;
+    float angleSpeed;
+    float skinSize;
+    std::string headSkin;
+    std::string trailSkin;
+    int r, g, b;
+
+} BodyAttributes;
+
 float calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
 float cameraAngle, float cameraX, float cameraY, int x, int y, int z, float cameraZoom);
 
@@ -15,7 +26,7 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
 
 std::string getColoredString(std::tuple<float, float, float> color, std::string skin);
 
-void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodiesAttributes, int maxTrailLength, float centerX, float centerY,float commonZ);
+void spawnBodies(std::vector<Body>& bodies, std::vector<BodyAttributes> bodiesAttributes, int maxTrailLength);
 
 
 

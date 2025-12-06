@@ -22,7 +22,7 @@ public:
     Body(float x, float y, float angleSpeed, std::string skin, std::string trailSkin, int maxTrailLength, std::tuple<float, float, float> color, int skinSize);
 
     void move(float centerX, float centerY,float commonZ);
-    void generateSkin(float centerX, float centerY,float commonZ);
+    void generateSkin(float commonZ);
     
 };
 
