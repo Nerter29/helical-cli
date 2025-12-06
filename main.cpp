@@ -35,7 +35,9 @@ void dipslayScreen(std::vector<std::vector<std::string>>& screen, int screenWidt
 
 int main(){
     int screenWidth = 80;
-    int screenHeight = 50;
+    int screenHeight = 44;
+
+    float defaultScreenLimitingScreenDim = screenHeight; // default screen height is the default limiting factor of the zoom
 
     getWindowSize(screenWidth, screenHeight);
     
@@ -53,19 +55,22 @@ int main(){
 
     float cameraAngle = 0;
     float cameraSpeed = 0.01;
-    float cameraZoom = 0.4;
+    float baseCameraZoom = 0.4;
+    float cameraZoom = baseCameraZoom;
+
+
 
     int maxTrailLength = 100;
 
     bool hasToRollback = false;
     std::vector<std::vector<float>> bodiesAttributes = {
-          //{x, y, angleSpeed, r, g, b}
+          //{x, y, angleSpeed, skinSize, r, g, b}
 
-    {centerX, centerY, 0, 255, 255, 0},
-    {centerX - 10, centerY - 5, 0.15, 255, 0, 0}, //10
-    {centerX + 0, centerY - 20, 0.05, 0, 0, 255}, //20
-    {centerX - 25, centerY + 12, 0.02, 255, 0, 255}, //35
-    {centerX + 10, centerY - 40, 0.07, 0, 255, 255}, //50
+    {centerX, centerY, 0, 10, 255, 255, 0},
+    {centerX - 10, centerY - 5, 0.15, 0, 255, 0, 0}, //10
+    {centerX + 0, centerY - 20, 0.05, 0, 0, 0, 255}, //20
+    {centerX - 25, centerY + 12, 0.02, 0, 255, 0, 255}, //35
+    {centerX + 10, centerY - 40, 0.07, 0, 0, 255, 255}, //50
 };
 
     spawnBodies(bodies, bodiesAttributes, maxTrailLength, centerX, centerY, commonZ);
@@ -74,6 +79,9 @@ int main(){
     while(true){
         std::cout << "\033[H\033[J";
         getWindowSize(screenWidth, screenHeight);
+        float limitingScreenDimension = std::min(screenWidth, screenHeight);
+        printf("%f", limitingScreenDimension);
+        cameraZoom = baseCameraZoom * (limitingScreenDimension / defaultScreenLimitingScreenDim);
 
         commonZ += zSpeed;
         if(commonZ >= DEPTH * 2 ){

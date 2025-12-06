@@ -8,7 +8,7 @@
 #define M_PI 3.14159265358979323846
 #define DEPTH 100
 
-void calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
+float calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
 float cameraAngle, float cameraX, float cameraY, int x, int y, int z, float cameraZoom){
     float localX = x - centerX;
     float localY = y - centerY;
@@ -19,6 +19,8 @@ float cameraAngle, float cameraX, float cameraY, int x, int y, int z, float came
     rotatedZ += centerZ;
     isometricX = static_cast<int>(((rotatedX - rotatedZ) * cameraZoom) + cameraX);
     isometricY = static_cast<int>(((rotatedX + rotatedZ) / 2 - y) * cameraZoom + cameraY);
+
+    return rotatedZ;
 }
 
 
@@ -35,12 +37,13 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
     float cameraX = screenWidth  / 2.0f - baseIsometricX;
     float cameraY = screenHeight / 2.0f - baseIsometricY;
 
+    std::vector<std::vector<float>> depthMemory(screenHeight, std::vector<float>(screenWidth, -1e9)); //to remember the depth of every chars
+
     for(int i = 0; i < bodies.size(); i++){
         Body& body = bodies[i];
 
-        if(i == 0){
-            body.generateSkin(centerX, centerY, commonZ);
-        }
+        body.generateSkin(centerX, centerY, commonZ);
+        
 
 
         for(int j = body.trailList.size() - 1 + body.headList.size() - 1; j >= 0 ; j--){
@@ -68,14 +71,18 @@ float centerX, float centerY, float& cameraAngle, float cameraSpeed, bool hasToR
 
             //isometric view
             int isometricX, isometricY;
-            calculateIsomtricPosition(isometricX, isometricY, centerX, centerY, commonZ, cameraAngle, cameraX, cameraY, x, y, z, cameraZoom);
+            float depth = calculateIsomtricPosition(isometricX, isometricY, centerX, centerY, commonZ, cameraAngle, cameraX, cameraY, x, y, z, cameraZoom);
 
             if(isometricX >= 0 && isometricX < screenWidth && isometricY >= 0 && isometricY < screenHeight){
-                if(j == body.trailList.size() - 1 || isHead){ //display Body
-                    screen[isometricY][isometricX] = getColoredString(body.color, body.skin);
-                }
-                else{ //display body's trail
-                    screen[isometricY][isometricX] = getColoredString(body.color, body.trailSkin);
+                if(depth > depthMemory[isometricY][isometricX]){  // we only display the char if it is over the last one
+                    depthMemory[isometricY][isometricX] = depth;
+                    
+                    if(j == body.trailList.size() - 1 || isHead){ //display Body
+                        screen[isometricY][isometricX] = getColoredString(body.color, body.skin);
+                    }
+                    else{ //display body's trail
+                        screen[isometricY][isometricX] = getColoredString(body.color, body.trailSkin);
+                    }
                 }     
             }   
         }
@@ -97,11 +104,12 @@ void spawnBodies(std::vector<Body>& bodies, std::vector<std::vector<float>> bodi
         float x = bodiesAttributes[i][0];
         float y = bodiesAttributes[i][1];
         float angleSpeed = bodiesAttributes[i][2];
-        float r = bodiesAttributes[i][3];
-        float g = bodiesAttributes[i][4];
-        float b = bodiesAttributes[i][5];
+        float skinSize = bodiesAttributes[i][3];
+        float r = bodiesAttributes[i][4];
+        float g = bodiesAttributes[i][5];
+        float b = bodiesAttributes[i][6];
         std::tuple<float, float, float> color = {r, g, b};
-        Body body = Body(x, y, angleSpeed, "@", "*", maxTrailLength, color, 10);
+        Body body = Body(x, y, angleSpeed, "@", "*", maxTrailLength, color, skinSize);
         bodies.push_back(body);
     }
 }

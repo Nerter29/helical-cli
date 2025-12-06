@@ -7,7 +7,7 @@
 
 #include "body.h"
 
-void calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
+float calculateIsomtricPosition(int& isometricX,int& isometricY, float centerX, float centerY, float centerZ,
 float cameraAngle, float cameraX, float cameraY, int x, int y, int z, float cameraZoom);
 
 void generateScreen(int screenWidth, int screenHeight, std::string spaceMaterial, std::vector<Body>& bodies, float commonZ, std::vector<std::vector<std::string>>& screen,
