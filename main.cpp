@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <csignal>
+
 
 #include "body.h"
 #include "helical.h"
@@ -16,6 +18,7 @@
 
 void getWindowSize(int& screenWidth, int& screenHeight);
 void dipslayScreen(std::vector<std::vector<std::string>>& screen, int screenWidth, int screenHeight);
+void showCursor(int signal);
 
 int main(){
     int screenWidth = 80;
@@ -59,18 +62,20 @@ int main(){
 
     //all the bodies attributes, main settings in this project, have fun changing it !
     std::vector<BodyAttributes> bodiesAttributes = {
-        //{startX, startY, angleSpeed, skinSize, headSkin, trailSkin, r, g, b}
+      //{startX, startY, angleSpeed, skinSize, headSkin, trailSkin, r, g, b}
         {centerX     , centerY     , 0   , 7 , "@", "#", 255, 255, 0  }, // sun
         {centerX - 2, centerY - 8 , 0.09 , 1 , "M", "*", 82, 152, 242},
         {centerX + 2, centerY + 8 , 0.09 , 1 , "W", "*", 221, 61, 242},
-        {centerX +  20, centerY - 6 , 0.06 , 3 , "&", "*", 166, 53, 242},
+        {centerX +  20, centerY - 6 , 0.02 , 3 , "&", "*", 166, 53, 242},
         {centerX + 14, centerY - 34 , -0.04 , 2 , "x", "*", 59, 215, 180}
 
     };
 
     spawnBodies(bodies, bodiesAttributes, maxTrailLength);
 
+    std::cout << "\033[?25l"; // hide cursor
     while(true){
+        std::signal(SIGINT, showCursor); //display cursor if the program ends
         //clear terminal
         system("clear");
 
@@ -108,6 +113,13 @@ int main(){
     }
     return 0;
 }
+
+void showCursor(int signal) {
+    // display back the cursor at the end of the program
+    std::cout << "\033[?25h" << std::flush;
+    std::exit(signal);
+}
+
 
 
 
