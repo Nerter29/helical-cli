@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <chrono>
+#include <iostream>
 
 #define M_PI 3.14159265358979323846
 #define DEPTH 100
@@ -64,7 +66,13 @@ void generateScreen(int screenWidth, int screenHeight, std::string spaceMaterial
         Body& body = bodies[i];
 
         //create the body's skin
-        body.generateSkin(commonZ);
+        if(body.isShootingStar){
+            body.generateSkin(body.z);
+        }
+        else{
+            body.generateSkin(commonZ);
+        }
+        
         
         //we browse trailList and headList, by starting by the last element of headList, and ending at the first element of trailList
         for(int j = body.trailList.size() - 1 + body.headList.size() - 1; j >= 0 ; j--){
@@ -72,7 +80,7 @@ void generateScreen(int screenWidth, int screenHeight, std::string spaceMaterial
 
 
             std::vector<float>* bodyPoint;// body point is a head or a trail, depending of j
-            //know if j is an index of the head or the trail
+            //to know if j is an index of the head or the trail
             if(j >= body.trailList.size() - 1){
                 isHead = true;
                 bodyPoint = &body.headList[j - (body.trailList.size() - 1)];
@@ -124,7 +132,13 @@ std::string getColoredString(std::tuple<float, float, float> color, std::string 
 
     return "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m" + skin + "\033[0m";
 }
+void addBody(std::vector<Body>& bodies, float startX, float startY, float startZ, float angleSpeed, int skinSize, std::string headSkin,
+    std::string trailSkin, std::tuple<float, float, float> color, int maxTrailLength, bool isShootingStar,
+    std::tuple<float, float, float> shootingStarDirection){
 
+    Body body = Body(startX, startY, startZ, angleSpeed, headSkin, trailSkin, maxTrailLength, color, skinSize, isShootingStar, shootingStarDirection);
+    bodies.push_back(body);
+}
 void spawnBodies(std::vector<Body>& bodies, std::vector<BodyAttributes> bodiesAttributes, int maxTrailLength){
     //adds a list of bodies in bodies
 
@@ -132,11 +146,21 @@ void spawnBodies(std::vector<Body>& bodies, std::vector<BodyAttributes> bodiesAt
         float r = bodiesAttributes[i].r;
         float g = bodiesAttributes[i].g;
         float b = bodiesAttributes[i].b;
-        std::tuple<float, float, float> color = {r, g, b};
-
-        Body body = Body(bodiesAttributes[i].x, bodiesAttributes[i].y, bodiesAttributes[i].angleSpeed, bodiesAttributes[i].headSkin,
-            bodiesAttributes[i].trailSkin, maxTrailLength, color, bodiesAttributes[i].skinSize);
-        bodies.push_back(body);
+        addBody(bodies, bodiesAttributes[i].x, bodiesAttributes[i].y, 0, bodiesAttributes[i].angleSpeed, bodiesAttributes[i].skinSize,
+            bodiesAttributes[i].headSkin, bodiesAttributes[i].trailSkin,{r, g, b}, maxTrailLength, false, {0, 0, 0});
     }
 }
 
+using Clock = std::chrono::high_resolution_clock;
+void handleShootingStars(std::vector<Body>& bodies, float centerX, float centerY, float commonZ, Clock::time_point& lastTime,
+    float spawnCooldown){
+    
+    Clock::time_point currentTime = Clock::now();
+    
+    //this function take care of spawning the shooting stars at random times
+    if(std::chrono::duration<float>(currentTime - lastTime).count() > spawnCooldown){
+        lastTime = Clock::now();
+        addBody(bodies, centerX + 10,  centerY - 15, commonZ - 100, 0, 1, "g", "!", {255, 255, 0}, 10, true, {0, 0, 5});
+    }
+
+}

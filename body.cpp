@@ -10,10 +10,12 @@
 #define M_PI 3.14159265358979323846
 
 
-Body::Body(float x, float y, float angleSpeed, std::string skin, std::string trailSkin, int maxTrailLength, std::tuple<float, float, float> color, int skinSize):
-    x(x), y(y), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin), maxTrailLength(maxTrailLength), color(color), skinSize(skinSize){}
+Body::Body(float x, float y, float z, float angleSpeed, std::string skin, std::string trailSkin, int maxTrailLength,
+    std::tuple<float, float, float> color, int skinSize, bool isShootingStar, std::tuple<float, float, float> shootingStarDirection):
+    x(x), y(y), z(z), angleSpeed(angleSpeed), skin(skin), trailSkin(trailSkin), maxTrailLength(maxTrailLength),
+    color(color), skinSize(skinSize), isOut(false), isShootingStar(isShootingStar), shootingStarDirection(shootingStarDirection){}
 
-void Body::move(float centerX, float centerY,float commonZ){
+void Body::moveSpiral(float centerX, float centerY, float commonZ){
     //we move every body in a circular way, at angleSpeed speed
 
     float localX = x - centerX; 
@@ -37,7 +39,22 @@ void Body::move(float centerX, float centerY,float commonZ){
     if(trailList.size() >= maxTrailLength * 2){
         trailList.erase(trailList.begin(), trailList.begin() + maxTrailLength);
     }
+}
 
+void Body::moveStraight(float commonZ){
+    x += std::get<0>(shootingStarDirection);
+    y += std::get<1>(shootingStarDirection);
+    z += std::get<2>(shootingStarDirection);
+
+    trailList.push_back({x,y,z});
+
+    if(trailList.size() >= maxTrailLength){
+        trailList.erase(trailList.begin());
+    }
+    //if the star is for sure out of bounds, we say that it is out and it will be deleted in main
+    if(z - 20 * maxTrailLength > commonZ){
+        isOut = true;
+    }
 }
 
 void Body::generateSkin(float commonZ){

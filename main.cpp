@@ -44,7 +44,7 @@ int main(){
     float commonZ = 0;
 
     //solar system speed
-    float zSpeed = 1;
+    float zSpeed = 1.5;
 
     float centerX = screenWidth / 2.0f;
     float centerY = screenHeight / 2.0f;
@@ -53,12 +53,15 @@ int main(){
     float cameraSpeed = 0.01;
     
     //baseCameraZoom to have a base value for dynamic zoom
-    float baseCameraZoom = 0.5;
+    float baseCameraZoom = 0.4;
     float cameraZoom = baseCameraZoom;
 
     int maxTrailLength = 200;
 
     bool hasToRollback = false;
+
+    using clock = std::chrono::high_resolution_clock;
+    clock::time_point lastTime = clock::now();
 
     //all the bodies attributes, main settings in this project, have fun changing it !
     std::vector<BodyAttributes> bodiesAttributes = {
@@ -70,6 +73,14 @@ int main(){
         {centerX + 14, centerY - 34 , -0.04 , 2 , "x", "*", 59, 215, 180}
 
     };
+    /*
+        std::vector<BodyAttributes> bodiesAttributes = {
+      //{startX, startY, angleSpeed, skinSize, headSkin, trailSkin, r, g, b}
+        {centerX     , centerY     , 0   , 12 , "@", "#", 255, 255, 0  }, // sun
+        {centerX - 20, centerY - 8 , 0.09 , 5 , "M", "*", 82, 152, 242},
+        {centerX + 20, centerY + 8 , 0.09 , 3 , "W", "*", 221, 61, 242},
+
+    };*/
 
     spawnBodies(bodies, bodiesAttributes, maxTrailLength);
 
@@ -77,8 +88,7 @@ int main(){
     while(true){
         std::signal(SIGINT, showCursor); //display cursor if the program ends
         //clear terminal
-        system("clear");
-
+        std::cout << "\033[H\033[J";
         getWindowSize(screenWidth, screenHeight);
 
         //the zoom is dynamic : if the window shrinks or grows, we adapt the zoom so we can always see the whole system
@@ -90,7 +100,7 @@ int main(){
 
         //if z becomes too big, we rollback the entire system, a part of this process is made in generateScreen()
         if(commonZ >= DEPTH * 2 ){
-            commonZ -= DEPTH;
+            commonZ -= DEPTH; 
             hasToRollback = true;
         }
         else{
@@ -98,15 +108,29 @@ int main(){
         }
 
         //update bodies
+
         for(int i = 0; i < bodies.size(); i++){
             Body& body = bodies[i];
-            body.move(centerX, centerY, commonZ);
+            if(body.isShootingStar){
+                body.moveStraight(commonZ);
+                if(body.isOut){
+                    bodies.erase(bodies.begin() + i);
+                }
+                if(hasToRollback){
+                    body.z -= DEPTH;
+                }
+            }
+            else{
+                body.moveSpiral(centerX, centerY, commonZ);
+            }
         }
 
         generateScreen(screenWidth, screenHeight, spaceMaterial, bodies, commonZ, screen,
             centerX, centerY, cameraAngle, cameraSpeed, hasToRollback, cameraZoom);
 
         dipslayScreen(screen, screenWidth, screenHeight);
+
+        //handleShootingStars(bodies, centerX, centerY, commonZ, lastTime, 5);
 
         //wait for the next frame
         std::this_thread::sleep_for(std::chrono::milliseconds(frameDelayMS));

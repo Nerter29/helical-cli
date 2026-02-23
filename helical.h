@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 #include "body.h"
 
@@ -28,6 +29,12 @@ std::string getColoredString(std::tuple<float, float, float> color, std::string 
 
 void spawnBodies(std::vector<Body>& bodies, std::vector<BodyAttributes> bodiesAttributes, int maxTrailLength);
 
+void addBody(std::vector<Body>& bodies, float startX, float startY, float startZ, float angleSpeed, int skinSize, std::string headSkin,
+    std::string trailSkin, std::tuple<float, float, float> color, int maxTrailLength, bool isShootingStar,
+    std::tuple<float, float, float> shootingStarDirection);
 
+using Clock = std::chrono::high_resolution_clock;
+void handleShootingStars(std::vector<Body>& bodies, float centerX, float centerY, float commonZ, Clock::time_point& lastTime,
+    float spawnCooldown);
 
 #endif // BODYHELICAL_H_H
